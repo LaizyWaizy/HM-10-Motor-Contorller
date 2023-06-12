@@ -1,0 +1,85 @@
+#include <AFMotor.h>
+#include <SoftwareSerial.h>
+
+AF_DCMotor motor1(1); // Initialize motor 1 on M1
+AF_DCMotor motor2(2); // Initialize motor 2 on M2
+
+SoftwareSerial HM10Serial(9, 10); // RX, TX
+
+int motorSpeed = 255; // Default motor speed
+unsigned long commandTimeout = 200; // Timeout duration in milliseconds
+unsigned long lastCommandTime = 0; // Time of the last received command
+
+void setup() {
+  Serial.begin(9600); // Initialize serial communication
+  HM10Serial.begin(9600); // Initialize Bluetooth communication
+  motor1.setSpeed(motorSpeed); // Set motor 1 speed (0-255)
+  motor2.setSpeed(motorSpeed); // Set motor 2 speed (0-255)
+}
+
+void loop() {
+  // Control motors using Serial Monitor
+  if (Serial.available() > 0) {
+    char command = Serial.read(); // Read the incoming character
+    processCommand(command);
+  }
+
+  // Control motors using Bluetooth module
+  if (HM10Serial.available() > 0) {
+    char command = HM10Serial.read(); // Read the incoming character
+    processCommand(command);
+  }
+
+  // Check if a command timeout has occurred
+  if (millis() - lastCommandTime > commandTimeout) {
+    motor1.run(RELEASE); // Release motor 1
+    motor2.run(RELEASE); // Release motor 2
+  }
+}
+
+void processCommand(char command) {
+  lastCommandTime = millis(); // Update the time of the last received command
+
+  if (command == 'F') {
+    motor1.run(FORWARD); // Spin motor 1 forward
+    motor2.run(FORWARD); // Spin motor 2 forward
+  }
+  
+  if (command == 'B') {
+    motor1.run(BACKWARD); // Spin motor 1 backward
+    motor2.run(BACKWARD); // Spin motor 2 backward
+  }
+  
+  if (command == 'R') {
+    motor1.run(FORWARD); // Spin motor 1 forward
+    motor2.run(BACKWARD); // Spin motor 2 backward
+  }
+  
+  if (command == 'L') {
+    motor1.run(BACKWARD); // Spin motor 1 backward
+    motor2.run(FORWARD); // Spin motor 2 forward
+  }
+  
+  if (command == 'S') {
+    motor1.run(RELEASE); // Release motor 1
+    motor2.run(RELEASE); // Release motor 2
+  }
+  
+  if (command == '1') {
+    motorSpeed = 50; // Set motor speed to 85
+    motor1.setSpeed(motorSpeed); // Update motor 1 speed
+    motor2.setSpeed(motorSpeed); // Update motor 2 speed
+  }
+  
+  if (command == '2') {
+    motorSpeed = 130F; // Set motor speed to 170
+    motor1.setSpeed(motorSpeed); // Update motor 1 speed
+    motor2.setSpeed(motorSpeed); // Update motor 2 speed
+  }
+  
+  if (command == '3') {
+    motorSpeed = 255; // Set motor speed to 255
+    motor1.setSpeed(motorSpeed); // Update motor 1 speed
+    motor2.setSpeed(motorSpeed); // Update motor 2 speed
+  }
+}
